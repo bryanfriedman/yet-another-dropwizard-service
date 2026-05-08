@@ -38,6 +38,7 @@ jobs:
       - name: Activate Moderne CLI with secrets
         run: |
           mod --version
+          mod config http trust-store edit file /etc/ssl/certs/adoptium/cacerts
           mod config moderne edit https://app.moderne.io
           mod config moderne login --with-token ${{ secrets.MODERNE_PLATFORM_PAT }}
           mod config license edit ${{ secrets.MODERNE_LICENSE_KEY_ALTERNATIVE }}
