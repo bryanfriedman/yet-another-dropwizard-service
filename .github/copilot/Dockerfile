@@ -6,9 +6,11 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates git \
  && rm -rf /var/lib/apt/lists/*
 
-# Pin the wrapper to LATEST so `mod` self-updates on first runtime invocation if needed.
-RUN curl -fsSL https://dev.moderne.io/cli | bash \
- && echo "version=LATEST" > /root/.moderne/cli/dist/moderne-wrapper.properties
+# Install the dev CLI snapshot. The install script writes the matching version
+# into moderne-wrapper.properties, so leave it alone — overwriting with
+# version=LATEST here causes the wrapper to look up jars that aren't on disk.
+# Image is rebuilt weekly to pick up newer snapshots.
+RUN curl -fsSL https://dev.moderne.io/cli | bash
 
 ENV PATH="/root/.moderne/cli/bin:${PATH}"
 
