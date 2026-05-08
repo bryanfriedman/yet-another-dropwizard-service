@@ -15,30 +15,25 @@ jobs:
     permissions:
       contents: read
       packages: read
-    env:
-      AGENT_IMAGE: ghcr.io/${{ github.repository_owner }}/yads-demo-mod-copilot-base:latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/yads-demo-mod-copilot-base:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v5
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Stage pre-baked Moderne CLI from image
+      # GitHub Actions sets HOME=/github/home for container jobs, but the image
+      # baked everything into /root/.moderne. Expose it at $HOME so `mod` finds it.
+      - name: Expose pre-baked Moderne config at $HOME
         run: |
-          docker pull "$AGENT_IMAGE"
-          cid=$(docker create "$AGENT_IMAGE")
-          docker cp "$cid:/root/.moderne" "$HOME/.moderne"
-          docker rm "$cid"
-          echo "$HOME/.moderne/cli/bin" >> "$GITHUB_PATH"
+          if [ ! -e "$HOME/.moderne" ]; then
+            ln -s /root/.moderne "$HOME/.moderne"
+          fi
 
       - name: Activate Moderne CLI with secrets
         run: |
           mod --version
-          mod config http trust-store edit file /etc/ssl/certs/adoptium/cacerts
           mod config moderne edit https://app.moderne.io
           mod config moderne login --with-token ${{ secrets.MODERNE_PLATFORM_PAT }}
           mod config license edit ${{ secrets.MODERNE_LICENSE_KEY_ALTERNATIVE }}

@@ -12,9 +12,8 @@ RUN curl -fsSL https://dev.moderne.io/cli | bash \
 
 ENV PATH="/root/.moderne/cli/bin:${PATH}"
 
-# Trust-store config is intentionally NOT set here: the path differs between
-# this build env (Temurin Docker image) and the GitHub runner. Set at runtime.
 RUN mod --version
+RUN mod config http trust-store edit file "$JAVA_HOME/lib/security/cacerts"
 RUN mod config recipes artifacts maven add https://repo.maven.apache.org/maven2
 
 # Pre-install all recipe jars
