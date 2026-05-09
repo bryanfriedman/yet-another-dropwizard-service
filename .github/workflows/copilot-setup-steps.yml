@@ -48,3 +48,20 @@ jobs:
 
       - name: Register Moderne MCP server with Copilot
         run: mod config agent-tools copilot install
+
+      - name: Build LST and mark ready
+        run: |
+          mod build .
+          if ls .moderne/build/*/lst.* >/dev/null 2>&1; then
+            echo "lst_ready=true" >> "$GITHUB_ENV"
+          else
+            echo "LST artifact not found in .moderne/build" >&2
+            exit 1
+          fi
+
+      - name: Wait for MCP tools and lst_ready
+        run: |
+          set -euo pipefail
+          timeout 60 bash -c 'until mod mcp --help >/dev/null 2>&1; do sleep 2; done'
+          timeout 60 bash -c 'until [ "${lst_ready:-false}" = "true" ]; do sleep 1; done'
+          echo "Moderne MCP tools are ready and lst_ready=${lst_ready}"
