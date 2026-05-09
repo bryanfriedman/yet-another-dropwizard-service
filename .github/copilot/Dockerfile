@@ -20,6 +20,12 @@ RUN curl -fsSL https://dev.moderne.io/cli | bash
 
 ENV PATH="/root/.moderne/cli/bin:${PATH}"
 
+# The CLI bundle ships with its own Java 25 JRE; the wrapper's MIN_JAVA_VERSION
+# is 25 but find_java picks the system $JAVA_HOME (Java 21 from this image's
+# base) before checking the bundled JRE, leading to ClassNotFoundException at
+# runtime. Pin the wrapper to the bundled JRE explicitly.
+ENV MODERNE_JAVA_HOME=/root/.moderne/cli/dist/jre
+
 RUN mod --version
 RUN mod config http trust-store edit file "$JAVA_HOME/lib/security/cacerts"
 RUN mod config recipes artifacts maven add https://repo.maven.apache.org/maven2

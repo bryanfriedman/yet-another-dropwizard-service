@@ -28,7 +28,10 @@ jobs:
       # https://github.com/orgs/community/discussions/170315
       options: --volume /home/runner:/home/runner --cap-add=NET_ADMIN --cap-add=NET_RAW
     steps:
-      - uses: actions/checkout@v5
+      # No actions/checkout here: the Copilot coding agent does its own clone
+      # at session start, and JS-action checkout has been failing inside this
+      # custom container due to /__w/_actions mount interactions with the
+      # /home/runner bind-mount. Setup-steps doesn't need a working tree.
 
       # GitHub Actions sets HOME=/github/home for container jobs, but the image
       # baked everything into /root/.moderne. Expose it at $HOME so `mod` finds it.
