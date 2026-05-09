@@ -22,9 +22,11 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
       # Bind-mount the host's /home/runner so Copilot agent harness scripts
       # dropped to /home/runner/work/_temp/<action>/script/*.sh resolve inside
-      # the container at the same path. Workaround per
+      # the container at the same path. NET_ADMIN/NET_RAW are needed for the
+      # Copilot agent firewall to set up iptables rules inside the container
+      # without being disabled. Workaround per
       # https://github.com/orgs/community/discussions/170315
-      options: --volume /home/runner:/home/runner
+      options: --volume /home/runner:/home/runner --cap-add=NET_ADMIN --cap-add=NET_RAW
     steps:
       - uses: actions/checkout@v5
 
