@@ -6,6 +6,12 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates git \
  && rm -rf /var/lib/apt/lists/*
 
+# The /home/runner bind-mount in copilot-setup-steps.yml causes a UID mismatch
+# between the host runner (UID 1001) and this container (root). Git refuses
+# to operate on repos with "dubious ownership" — pre-trust any directory so
+# the Copilot harness can clone + run git commands against the workspace.
+RUN git config --system --add safe.directory '*'
+
 # Install the dev CLI snapshot. The install script writes the matching version
 # into moderne-wrapper.properties, so leave it alone — overwriting with
 # version=LATEST here causes the wrapper to look up jars that aren't on disk.
