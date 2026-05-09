@@ -20,6 +20,11 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+      # Bind-mount the host's /home/runner so Copilot agent harness scripts
+      # dropped to /home/runner/work/_temp/<action>/script/*.sh resolve inside
+      # the container at the same path. Workaround per
+      # https://github.com/orgs/community/discussions/170315
+      options: --volume /home/runner:/home/runner
     steps:
       - uses: actions/checkout@v5
 
