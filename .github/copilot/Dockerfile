@@ -12,12 +12,7 @@ RUN apt-get update \
 # the Copilot harness can clone + run git commands against the workspace.
 RUN git config --system --add safe.directory '*'
 
-# Install the dev CLI snapshot. The install script writes the matching version
-# into moderne-wrapper.properties, so leave it alone — overwriting with
-# version=LATEST here causes the wrapper to look up jars that aren't on disk.
-# Image is rebuilt weekly to pick up newer snapshots.
 RUN curl -fsSL https://dev.moderne.io/cli | bash
-RUN echo "version=LATEST" > $HOME/.moderne/cli/dist/moderne-wrapper.properties
 
 ENV PATH="/root/.moderne/cli/bin:${PATH}"
 
@@ -27,6 +22,7 @@ ENV PATH="/root/.moderne/cli/bin:${PATH}"
 # runtime. Pin the wrapper to the bundled JRE explicitly.
 ENV MODERNE_JAVA_HOME=/root/.moderne/cli/dist/jre
 
+RUN mod wrapper --global --auto-update-snapshot
 RUN mod --version
 RUN mod config http trust-store edit file "$JAVA_HOME/lib/security/cacerts"
 RUN mod config recipes artifacts maven add https://repo.maven.apache.org/maven2
