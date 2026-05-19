@@ -12,6 +12,15 @@ RUN apt-get update \
 # the Copilot harness can clone + run git commands against the workspace.
 RUN git config --system --add safe.directory '*'
 
+# The Copilot agent session's bootstrap script hardcodes host paths like
+# /home/runner/work/_temp/ghcca-node/node/bin/node, but inside a container job
+# the runner's temp dir is mounted at /__w/_temp. setup-steps.yml's
+# --volume /home/runner:/home/runner only applies to that workflow; the agent
+# session is launched separately and doesn't inherit those options. Symlinking
+# /home/runner/work/_temp -> /__w/_temp at image-build time makes the host-style
+# path resolve to the real temp dir whether the bind-mount is active or not.
+RUN mkdir -p /home/runner/work && ln -sfn /__w/_temp /home/runner/work/_temp
+
 RUN curl -fsSL https://dev.moderne.io/cli | bash
 
 ENV PATH="/root/.moderne/cli/bin:${PATH}"
