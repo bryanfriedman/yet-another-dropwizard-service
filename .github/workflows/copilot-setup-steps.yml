@@ -20,13 +20,17 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-      # Bind-mount the host's /home/runner so Copilot agent harness scripts
-      # dropped to /home/runner/work/_temp/<action>/script/*.sh resolve inside
-      # the container at the same path. NET_ADMIN/NET_RAW are needed for the
-      # Copilot agent firewall to set up iptables rules inside the container
-      # without being disabled. Workaround per
-      # https://github.com/orgs/community/discussions/170315
-      options: --volume /home/runner:/home/runner --cap-add=NET_ADMIN --cap-add=NET_RAW
+      # NET_ADMIN/NET_RAW are needed for the Copilot agent firewall to set up
+      # iptables rules inside the container without being disabled.
+      # Workaround per https://github.com/orgs/community/discussions/170315
+      #
+      # Host paths like /home/runner/work/_temp/<action>/script/*.sh that the
+      # Copilot harness hardcodes are resolved via the
+      # /home/runner/work/_temp -> /__w/_temp symlink baked into the image, not
+      # a bind-mount: --volume /home/runner:/home/runner shadows the symlink
+      # with an empty host dir, since the runner stages ghcca-node and harness
+      # scripts inside the container's _temp (/__w/_temp), not on the host.
+      options: --cap-add=NET_ADMIN --cap-add=NET_RAW
     steps:
       # No actions/checkout here: the Copilot coding agent does its own clone
       # at session start, and JS-action checkout has been failing inside this
