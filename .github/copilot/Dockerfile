@@ -3,7 +3,7 @@ FROM eclipse-temurin:21-jdk
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates git \
+ && apt-get install -y --no-install-recommends curl ca-certificates git unzip \
  && rm -rf /var/lib/apt/lists/*
 
 # The /home/runner bind-mount in copilot-setup-steps.yml causes a UID mismatch
@@ -22,6 +22,13 @@ ENV PATH="/root/.moderne/cli/bin:${PATH}"
 # runtime. Pin the wrapper to the bundled JRE explicitly.
 ENV MODERNE_JAVA_HOME=/root/.moderne/cli/dist/jre
 
+# Track the latest snapshot from Maven Central Snapshots. Requires `unzip` in
+# the base image: modw reads Implementation-Version from the JAR manifest via
+# `unzip -p` to compute the classpath extraction dir, and falls back to
+# version.txt without it. For SNAPSHOT installs those differ
+# (4.3.0-SNAPSHOT in manifest vs. timestamped form in version.txt), and the
+# resulting path mismatch leaves the JVM with an empty classpath →
+# ClassNotFoundException: io.moderne.cli.commands.Mod.
 RUN mod wrapper --global --auto-update-snapshot
 RUN mod --version
 RUN mod config http trust-store edit file "$JAVA_HOME/lib/security/cacerts"
