@@ -37,6 +37,30 @@ jobs:
       # custom container due to /__w/_actions mount interactions with the
       # /home/runner bind-mount. Setup-steps doesn't need a working tree.
 
+      # TEMPORARY: locate ghcca-node — the agent bootstrap hardcodes
+      # /home/runner/work/_temp/ghcca-node/node/bin/node and we don't yet know
+      # where that file actually lives inside the container. Remove once fixed.
+      - name: Debug — find ghcca-node and related agent assets
+        run: |
+          set +e
+          echo "::group::env"
+          echo "RUNNER_TEMP=$RUNNER_TEMP"
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          echo "HOME=$HOME"
+          echo "::endgroup::"
+          echo "::group::/home/runner tree"
+          ls -laR /home/runner 2>&1 | head -50
+          echo "::endgroup::"
+          echo "::group::/__w tree (depth 3)"
+          find /__w -maxdepth 3 2>&1 | head -80
+          echo "::endgroup::"
+          echo "::group::search for ghcca-node anywhere"
+          find / -name 'ghcca-node' -prune 2>/dev/null
+          echo "::endgroup::"
+          echo "::group::search for node binaries"
+          find / -name 'node' -type f -executable 2>/dev/null | head -20
+          echo "::endgroup::"
+
       # GitHub Actions sets HOME=/github/home for container jobs, but the image
       # baked everything into /root/.moderne. Expose it at $HOME so `mod` finds it.
       - name: Expose pre-baked Moderne config at $HOME
