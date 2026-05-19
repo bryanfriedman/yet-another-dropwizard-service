@@ -17,6 +17,8 @@ RUN git config --system --add safe.directory '*'
 # version=LATEST here causes the wrapper to look up jars that aren't on disk.
 # Image is rebuilt weekly to pick up newer snapshots.
 RUN curl -fsSL https://dev.moderne.io/cli | bash
+RUN echo "version=LATEST" > $HOME/.moderne/cli/dist/moderne-wrapper.properties
+RUN echo "$HOME/.moderne/cli/bin" >> "$GITHUB_PATH"
 
 ENV PATH="/root/.moderne/cli/bin:${PATH}"
 
