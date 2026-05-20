@@ -3,7 +3,7 @@ FROM eclipse-temurin:21-jdk
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates git unzip \
+ && apt-get install -y --no-install-recommends curl ca-certificates git unzip jq \
  && rm -rf /var/lib/apt/lists/*
 
 # The /home/runner bind-mount in copilot-setup-steps.yml causes a UID mismatch
